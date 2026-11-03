@@ -1,28 +1,25 @@
-// Practical 2: Create CollegeDB and Students collection; perform CRUD operations.
-const collegeDB = db.getSiblingDB("CollegeDB");
-
-collegeDB.Students.insertMany([
-    { Student_ID: 201, Name: "Aarav Sharma", Course: "BCA", Semester: 3, Marks: 82 },
-    { Student_ID: 202, Name: "Diya Singh", Course: "BCA", Semester: 3, Marks: 91 },
-    { Student_ID: 203, Name: "Rohan Verma", Course: "BBA", Semester: 2, Marks: 76 },
-    { Student_ID: 204, Name: "Meera Gupta", Course: "BCA", Semester: 5, Marks: 88 },
-    { Student_ID: 205, Name: "Kabir Joshi", Course: "BCom", Semester: 4, Marks: 79 }
+// Practical 2: Event Logging System
+const db2 = db.getSiblingDB("Lab3_Practical2");
+db2.Events.deleteMany({});
+db2.Events.insertMany([
+  {userId: 101, event: "login", time: ISODate("2026-10-01T09:00:00Z"), success: true},
+  {userId: 101, event: "failed-login", time: ISODate("2026-10-01T09:05:00Z"), success: false},
+  {userId: 101, event: "failed-login", time: ISODate("2026-10-01T09:06:00Z"), success: false},
+  {userId: 102, event: "file-upload", time: ISODate("2026-10-01T10:00:00Z"), file: "notes.pdf"},
+  {userId: 101, event: "password-change", time: ISODate("2026-10-02T08:00:00Z")},
+  {userId: 103, event: "logout", time: ISODate("2026-10-02T12:00:00Z")},
+  {userId: 101, event: "failed-login", time: ISODate("2026-10-02T12:05:00Z"), success: false}
 ]);
-
-// 1. Display all documents.
-collegeDB.Students.find({}, { _id: 0 }).forEach(doc => printjson(doc));
-
-// 2. Find students from a particular course (example: BCA).
-collegeDB.Students.find({ Course: "BCA" }, { _id: 0 }).forEach(doc => printjson(doc));
-
-// 3. Update marks of one student.
-collegeDB.Students.updateOne(
-    { Student_ID: 201 },
-    { $set: { Marks: 86 } }
-);
-
-// 4. Delete one student.
-collegeDB.Students.deleteOne({ Student_ID: 205 });
-
-// 5. Count total students.
-print("Total students: " + collegeDB.Students.countDocuments({}));
+// Display all events.
+db2.Events.find();
+// Identify users with repeated failed login attempts.
+db2.Events.aggregate([
+  {$match: {event: "failed-login"}},
+  {$group: {_id: "$userId", failedAttempts: {$sum: 1}}},
+  {$match: {failedAttempts: {$gte: 2}}}
+]);
+// Find frequently occurring event types.
+db2.Events.aggregate([
+  {$group: {_id: "$event", total: {$sum: 1}}},
+  {$sort: {total: -1}}
+]);

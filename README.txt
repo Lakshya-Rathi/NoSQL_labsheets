@@ -1,139 +1,121 @@
 BCA305P - NOSQL DATABASE DESIGN
-LAB SHEET 2
+LAB SHEET 5
 ============
 
-This folder contains files for all 15 practicals in the order given in the
-teacher-provided PDF. Native formats are used for each database technology.
+This folder contains all 15 practicals in the same order as the teacher's
+Lab Sheet 5 PDF. Practicals 1-10 use Riak KV; practicals 11-15 use Neo4j.
 
-CONTENTS
---------
-Practical 1:
-  1_mysql.sql       - MySQL table and five student rows
-  1_mongodb.js     - Equivalent MongoDB collection and documents
+FILES
+-----
+1.sh to 10.sh
+  Bash scripts using Riak KV's HTTP API (curl). These demonstrate buckets,
+  key-value operations, JSON values, quorum parameters, application-side
+  filtering, and set datatype requests.
 
-Practical 2:
-  2.js             - MongoDB CRUD operations on CollegeDB.Students
+11.cypher to 14.cypher
+  Neo4j Cypher scripts for graph creation, relationships, queries and
+  transactions.
 
-Practical 3:
-  3.js             - MongoDB embedded Orders and aggregation
+15_neo4j_app.py
+  Python CRUD and relationship-oriented query example using the Neo4j driver.
 
-Practical 4:
-  4_redis.txt       - Redis CLI commands
-
-Practical 5:
-  5.cql             - Cassandra keyspace, table and CQL operations
-
-Practical 6:
-  6_hbase.txt       - HBase Shell commands
-
-Practical 7:
-  7.cypher          - Neo4j nodes, relationships and Cypher queries
-
-Practical 8:
-  8_mongodb.js      - Student dataset in MongoDB
-  8_cassandra.cql  - Student dataset in Cassandra
-  8_neo4j.cypher   - Student dataset in Neo4j
-  8_comparison.txt - Comparison of data model, storage, query, scalability
-                      and suitable applications
-
-Practical 9:
-  9.js              - MongoDB single-server CRUD demonstration
-
-Practical 10:
-  10_sharding_guide.txt - MongoDB sharding setup and verification guide
-
-Practical 11:
-  11_replication_guide.txt - MongoDB primary-secondary replica set guide
-
-Practical 12:
-  12_cassandra_peer_replication.txt - Cassandra peer-to-peer replication guide
-
-Practical 13:
-  13_sharding_replication_guide.txt - MongoDB sharding + replication guide
-
-Practical 14:
-  14_mapreduce.js   - MapReduce count and average marks by course
-
-Practical 15:
-  15_distribution_models.txt - Architectures, data distribution, failure
-                               handling, advantages, limitations and uses
+requirements.txt
+  Python dependency for Practical 15.
 
 REQUIREMENTS
 ------------
-Install only the database systems needed for the practical you are running:
-- MySQL Server and MySQL client
-- MongoDB Server and MongoDB Shell (mongosh)
-- Redis Server and redis-cli
-- Apache Cassandra and cqlsh
-- Apache HBase and HBase Shell
-- Neo4j Database and Neo4j Browser or cypher-shell
+Riak practicals:
+- Linux system (as required by the assignment).
+- A running Riak KV node with the HTTP interface enabled, normally port 8098.
+- curl. Practical 9 also uses jq.
+- Practical 10 requires Riak CRDT datatype support and a bucket type configured
+  for the set datatype.
 
-You do not need all database systems installed at once to read the files.
-Practicals 10-13 require multi-process or multi-node configurations and
-cannot be demonstrated fully with one standalone database server.
+Neo4j practicals:
+- Neo4j Server / Desktop / Aura database.
+- Neo4j Browser or cypher-shell.
+- Practical 15: Python 3 and the Neo4j Python driver.
 
-HOW TO RUN
-----------
-MySQL:
-  mysql -u root -p < 1_mysql.sql
+RIAK SETUP AND EXECUTION
+------------------------
+Riak KV versions and Linux distributions differ. Install a compatible Riak KV
+release using its supported package/container instructions for your Linux
+distribution, configure the HTTP listener, start the node, and verify that
+the HTTP API is reachable at:
 
-MongoDB:
-  mongosh "mongodb://localhost:27017/" 1_mongodb.js
-  mongosh "mongodb://localhost:27017/" 2.js
-  mongosh "mongodb://localhost:27017/" 3.js
-  mongosh "mongodb://localhost:27017/" 9.js
-  mongosh "mongodb://localhost:27017/" 14_mapreduce.js
+  http://localhost:8098
 
-Redis:
-  Start Redis, then open redis-cli and enter commands from 4_redis.txt.
+From a Linux terminal, make scripts executable:
 
-Cassandra:
-  Open cqlsh and run commands from 5.cql or 8_cassandra.cql.
+  chmod +x *.sh
 
-HBase:
-  Start HBase and its required services, open hbase shell, and enter commands
-  from 6_hbase.txt.
+Run a practical:
 
-Neo4j:
-  Open Neo4j Browser or cypher-shell and run commands from 7.cypher or
-  8_neo4j.cypher.
+  ./1.sh
+  ./2.sh
+  ...
+  ./10.sh
 
-GUIDANCE
---------
-- Run practicals in the order given by the teacher.
-- Use the matching database shell/client for each file extension.
-- Text files containing setup steps are guides, not executable scripts.
-- Sample names, IDs and values are illustrative.
-- If you rerun an INSERT script, duplicate-key or duplicate-document errors
-  may occur. Clear the demonstration collection/table/database first or use
-  a fresh demo database when appropriate.
-- Practical 1 uses the same five sample student records in MySQL and MongoDB.
-- Practical 3 calculates each order's total as Price multiplied by Quantity.
-- Practical 5 creates a secondary index on Course because Cassandra does not
-  generally allow arbitrary filtering without a suitable key/index design.
-- Practical 10 needs a functioning sharded cluster; enabling sharding commands
-  alone on a standalone MongoDB server does not create multiple shards.
-- Practical 11 requires multiple MongoDB instances configured as a replica set.
-- Practical 12 requires multiple Cassandra nodes. The example replication
-  factor assumes three nodes in a data centre named datacenter1.
-- Practical 13 combines multiple shards with replica sets for each shard.
-- Practical 14 uses MongoDB mapReduce because the assignment specifically asks
-  for MapReduce. MongoDB's mapReduce command is deprecated in modern versions;
-  use a compatible environment for this demonstration.
-- Practical 15 is an explanation/architecture practical and is provided as
-  a text guide.
+If Riak is on another host or port, edit the RIAK variable at the top of each
+script. The scripts use the Riak HTTP API and curl rather than a Python client.
 
-IMPORTANT LIMITATIONS
---------------------
-The assignment asks for practical demonstrations of distributed deployments.
-Those tasks depend on the local machine, installed software, ports, network,
-server configuration and database version. The guide files provide a
-repeatable outline, but do not claim that a multi-node cluster is already
-running.
+Important Riak notes:
+- Riak KV is a distributed key-value store. A bucket groups keys; a key
+  identifies one object; the value is the stored data.
+- A PUT to an existing bucket/key replaces the stored value (subject to Riak's
+  object versioning/conflict-resolution behaviour).
+- Practical 4 and 8 model a cart as one JSON object. The read-modify-write
+  sequence is illustrative and is not a multi-object ACID transaction.
+- Practical 6 uses r and w request parameters. Suitable quorum values depend
+  on the bucket's N value and the cluster's available replicas.
+- Practical 7 inserts sample data into multiple buckets. Actual distribution
+  is handled by Riak's partition/vnode ring across cluster nodes.
+- Practical 9 demonstrates application-side filtering after retrieving known
+  keys; it is not a server-side arbitrary JSON query.
+- Practical 10 uses the Riak datatype HTTP API. A bucket type named "sets"
+  must be configured and activated for the set datatype before execution.
+  Set membership/common-element comparisons are shown as application logic.
+
+NEO4J EXECUTION
+---------------
+Open Neo4j Browser or cypher-shell and run the required .cypher file contents:
+
+  11.cypher
+  12.cypher
+  13.cypher
+  14.cypher
+
+The files use Cypher statements. Run the CREATE scripts once in a clean demo
+database, or remove old demo data before rerunning to avoid duplicates.
+
+Practical 14 uses explicit transaction syntax supported by current Neo4j
+Browser/cypher-shell workflows. If your Neo4j interface expects transaction
+commands to be entered separately, run BEGIN, the statements, then COMMIT as
+separate steps. The deletion example is commented out to avoid accidental
+deletion.
+
+PRACTICAL 15 - PYTHON APPLICATION
+---------------------------------
+Install the driver:
+
+  python -m pip install -r requirements.txt
+
+Set connection details before running. Example for a local Neo4j server:
+
+  export NEO4J_URI="bolt://localhost:7687"
+  export NEO4J_USER="neo4j"
+  export NEO4J_PASSWORD="your-password"
+
+Then run:
+
+  python 15_neo4j_app.py
+
+On Windows PowerShell, use $env:NEO4J_URI, $env:NEO4J_USER and
+$env:NEO4J_PASSWORD to set environment variables.
 
 TESTING STATUS
 --------------
-Files were generated and checked for expected filenames and ZIP integrity.
-The database commands have not been executed against live MySQL, MongoDB,
-Redis, Cassandra, HBase or Neo4j servers. Check syntax/version compatibility
-in your installed database environment before practical submission.
+The ZIP contents and expected practical files were checked. The scripts have
+not been run against live Riak or Neo4j servers. Riak installation, cluster
+configuration, bucket-type activation, database credentials and version
+compatibility depend on the actual Linux/Neo4j environment.

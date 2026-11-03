@@ -1,31 +1,17 @@
-// Practical 9: Basic MongoDB operations on a single local server.
-// First install and start MongoDB Server, then run this file with mongosh.
-const localDB = db.getSiblingDB("LocalDemoDB");
-
-// Create collection and insert sample records.
-if (!localDB.getCollectionNames().includes("Students")) {
-    localDB.createCollection("Students");
-}
-localDB.Students.insertMany([
-    { Student_ID: 901, Name: "Aarav", Course: "BCA", Marks: 82 },
-    { Student_ID: 902, Name: "Diya", Course: "BCA", Marks: 91 },
-    { Student_ID: 903, Name: "Rohan", Course: "BBA", Marks: 76 }
+// Practical 9: Product Review and Rating System
+const db9 = db.getSiblingDB("Lab3_Practical9");
+db9.Reviews.deleteMany({});
+db9.Reviews.insertMany([
+  {productId: "P101", customer: "Aarav", rating: 5, review: "Excellent"},
+  {productId: "P101", customer: "Diya", rating: 4, review: "Very good"},
+  {productId: "P102", customer: "Rohan", rating: 3, review: "Average"},
+  {productId: "P102", customer: "Meera", rating: 4, review: "Good"},
+  {productId: "P102", customer: "Kabir", rating: 5, review: "Great"}
 ]);
-
-// Read.
-localDB.Students.find().forEach(doc => printjson(doc));
-
-// Update.
-localDB.Students.updateOne(
-    { Student_ID: 901 },
-    { $set: { Marks: 86 } }
-);
-
-// Delete.
-localDB.Students.deleteOne({ Student_ID: 903 });
-
-// Verify.
-print("Final records:");
-localDB.Students.find().forEach(doc => printjson(doc));
-print("Server status:");
-printjson(db.adminCommand({ ping: 1 }));
+// Calculate average rating and number of reviews for each product.
+db9.Reviews.aggregate([
+  {$group: {_id: "$productId", averageRating: {$avg: "$rating"}, numberOfReviews: {$sum: 1}}},
+  {$sort: {_id: 1}}
+]);
+// Display reviews for a particular product.
+db9.Reviews.find({productId: "P101"});
